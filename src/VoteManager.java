@@ -7,11 +7,6 @@ public class VoteManager {
     private final String USER_FILE = "users.txt";
     private final String VOTE_FILE = "results.txt";
 
-    // ------------------------------------------------------------------ //
-    //  Pre-loaded Candidates                                               //
-    //  To add or remove candidates, edit this list only.                  //
-    // ------------------------------------------------------------------ //
-
     private final List<Candidate> candidates = new ArrayList<>(Arrays.asList(
             new Candidate(1, "Alice Johnson",   "National Progress Party"),
             new Candidate(2, "Bob Martinez",    "United Citizens Front"),
@@ -20,20 +15,10 @@ public class VoteManager {
             new Candidate(5, "Eva Okafor",      "People's Democratic Union")
     ));
 
-    // ------------------------------------------------------------------ //
-    //  Constructor — re-hydrate vote counts from results.txt on startup   //
-    // ------------------------------------------------------------------ //
-
     public VoteManager() {
         loadVoteCounts();
     }
 
-    /**
-     * Reads results.txt and increments each candidate's in-memory counter
-     * so vote tallies survive a program restart.
-     *
-     * Line format in results.txt:  candidateName,boothAssignment
-     */
     private void loadVoteCounts() {
         File file = new File(VOTE_FILE);
         if (!file.exists()) return;
@@ -51,48 +36,36 @@ public class VoteManager {
         }
     }
 
-    // ------------------------------------------------------------------ //
-    //  Candidate helpers                                                   //
-    // ------------------------------------------------------------------ //
-
-    /** Returns an unmodifiable view of the candidate list. */
     public List<Candidate> getCandidates() {
         return Collections.unmodifiableList(candidates);
     }
 
-    /** Looks up a candidate by their menu number (1-based). */
     public Optional<Candidate> getCandidateById(int id) {
         return candidates.stream().filter(c -> c.getId() == id).findFirst();
     }
 
-    /** Looks up a candidate by name (case-insensitive). */
     public Optional<Candidate> getCandidateByName(String name) {
         return candidates.stream()
                 .filter(c -> c.getName().equalsIgnoreCase(name))
                 .findFirst();
     }
 
-    /** Prints the full candidate roster with live vote counts. */
     public void displayCandidates() {
-        System.out.println("\n  +================================================================+");
         System.out.println("  |                    CANDIDATES ON BALLOT                       |");
-        System.out.println("  +================================================================+");
+
         for (Candidate c : candidates) {
             System.out.println(c.toDisplayString());
         }
-        System.out.println("  +================================================================+");
     }
 
-    /** Prints a full vote-count summary, sorted by votes descending. */
     public void displayResults() {
         List<Candidate> sorted = new ArrayList<>(candidates);
         sorted.sort((a, b) -> b.getVoteCount() - a.getVoteCount());
 
         int totalVotes = sorted.stream().mapToInt(Candidate::getVoteCount).sum();
 
-        System.out.println("\n  +================================================================+");
         System.out.println("  |                      LIVE VOTE TALLY                          |");
-        System.out.println("  +================================================================+");
+
         for (Candidate c : sorted) {
             double pct = (totalVotes == 0) ? 0.0
                     : (c.getVoteCount() * 100.0 / totalVotes);
@@ -101,12 +74,7 @@ public class VoteManager {
         }
         System.out.println("  ----------------------------------------------------------------");
         System.out.printf("  Total votes cast: %d%n", totalVotes);
-        System.out.println("  +================================================================+");
     }
-
-    // ------------------------------------------------------------------ //
-    //  Password hashing                                                    //
-    // ------------------------------------------------------------------ //
 
     private String hashPassword(String password) {
         try {
@@ -123,10 +91,6 @@ public class VoteManager {
             throw new RuntimeException("Hashing algorithm not found!", e);
         }
     }
-
-    // ------------------------------------------------------------------ //
-    //  Registration                                                        //
-    // ------------------------------------------------------------------ //
 
     public void registerUser(String username, String password,
                              int age, String gender, boolean disabled) {
@@ -164,10 +128,6 @@ public class VoteManager {
         return false;
     }
 
-    // ------------------------------------------------------------------ //
-    //  Login                                                               //
-    // ------------------------------------------------------------------ //
-
     public User login(String username, String password) {
         String hashedInput = hashPassword(password);
 
@@ -191,14 +151,6 @@ public class VoteManager {
         return null;
     }
 
-    // ------------------------------------------------------------------ //
-    //  Voting                                                              //
-    // ------------------------------------------------------------------ //
-
-    /**
-     * Casts a vote for the candidate selected by ID number.
-     * Updates the in-memory counter immediately and persists to results.txt.
-     */
     public void castVote(User user, int candidateId) {
         if (user.hasVoted()) {
             System.out.println("Security Alert: You have already voted!");
@@ -218,7 +170,7 @@ public class VoteManager {
             bw.write(chosen.getName() + "," + booth);
             bw.newLine();
 
-            chosen.addVote();   // update in-memory counter immediately
+            chosen.addVote();
             updateUserStatus(user.getUsername());
 
             System.out.println("\nVote cast for \"" + chosen.getName()

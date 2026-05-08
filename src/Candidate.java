@@ -11,19 +11,14 @@ public class Candidate {
         this.voteCount = 0;
     }
 
-    // Getters
+    // getters
     public int    getId()        { return id; }
     public String getName()      { return name; }
     public String getParty()     { return party; }
     public int    getVoteCount() { return voteCount; }
 
-    /** Increments this candidate's vote counter by one. */
     public void addVote() { voteCount++; }
 
-    /**
-     * Pretty one-line summary used in the candidate list display.
-     * Example:  [1]  Alice Johnson        (National Progress Party)   Votes: 4
-     */
     public String toDisplayString() {
         return String.format("  [%d]  %-22s %-35s Votes: %d",
                 id, name, "(" + party + ")", voteCount);
